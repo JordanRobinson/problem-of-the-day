@@ -1,10 +1,12 @@
 //var http = require('http');
+var fs = require('fs');
+var lazy = require('./lazy');
 
 function vigenereEncode(key, message) {
 
     var ret = '';
 
-    key = makeKey(key, message)
+    key = makeKey(key, message);
 
     for (var j = 0; j < message.length; j++) {
         var intChar = ((message.charCodeAt(j) - 65) + (key.charCodeAt(j) - 65)) % 26;
@@ -18,7 +20,7 @@ function vigenereEncode(key, message) {
 function vigenereDecode(key, message) {
     var ret = '';
 
-    key = makeKey(key, message)
+    key = makeKey(key, message);
 
     for (var j = 0; j < message.length; j++) {
         var intChar = 0;
@@ -39,26 +41,64 @@ function vigenereFrequency(message) {
 }
 
 function generateCombinations() {
-    var ret = "";
+    var fileString = '';
+    var ret = '';
 
     for (var m = 0; m < 26; m++) {
         for (var l = 0; l < 26; l++) {
             for (var j = 0; j < 26; j++) {
                 for (var k = 0; k < 26; k++) {
-                    //for (var i = 0; i < 26; i++) {
-                    //    ret += String.fromCharCode(i + 65);
+                    for (var i = 0; i < 26; i++) {
+                        ret += String.fromCharCode(i + 65);
                         ret += String.fromCharCode(k + 65);
                         ret += String.fromCharCode(j + 65);
                         ret += String.fromCharCode(l + 65);
                         ret += String.fromCharCode(m + 65);
-                        //console.log(ret)
-                        console.log(getFreq(vigenereDecode(ret, 'KSGDGBJQBEQKKLGDG')));
-                        ret = "";
-                    //}
+                        fileString += ret + '\n';
+                        //console.log(ret);
+                        //console.log(getFreq(vigenereDecode(ret, 'KSGDGBJQBEQKKLGDG')));
+                        ret = '';
+                    }
                 }
             }
         }
     }
+
+    //saving to file means we can do this in advance, and only once
+    fs.writeFile('C:\\temp', fileString, function(err) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            console.log('File saved.');
+        }
+    });
+}
+
+function parseFile () {
+    var ret = '';
+    new lazy(fs.createReadStream('C:\\temp', 'utf8'))
+        .lines
+        .forEach(function(line) {
+            var possible = vigenereDecode(line, 'KSGDGBJQBEQKKLGDG');
+            if (possible.match(/[E]+([T]|[A])+/)) {
+                var possibleLine = getFreq(possible) + " -- " + line;
+                //ret += possibleLine + '\n';
+                console.log('\n' + possibleLine);
+            }
+            else {
+                process.stdout.write('.');
+            }
+        });
+
+    fs.writeFile('C:\\temp2', ret, function(err) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            console.log('File saved.');
+        }
+    });
 }
 
 function getFreq (input) {
@@ -90,7 +130,8 @@ function makeKey(key, message) {
 //console.log(getFreq('BANANA'))
 
 //console.log(vigenereFrequency('KSGDGBJQBEQKKLGDG'))
-generateCombinations()
+//generateCombinations()
+parseFile();
 
 
 //http.createServer(function (req, res) {
