@@ -1,4 +1,6 @@
 fn main() {
+	//very simple non-recursive fibonacci
+	//would be nice to have a problem that would be more efficient by threading, but oh well
 
 	let args = std::os::args();
 	println!("{}", args);
